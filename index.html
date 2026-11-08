@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Bilibili Playlist</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    padding: 22px 30px;
+    background: #1b1b1b;
+    font-size: 26px;
+    font-weight: bold;
+}
+
+.container {
+    padding: 24px;
+}
+
+.player {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: black;
+    margin-bottom: 30px;
+}
+
+.player iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.video-card {
+    cursor: pointer;
+    min-width: 0;
+}
+
+.thumbnail {
+    aspect-ratio: 16 / 9;
+    background: #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    color: #aaa;
+    transition: 0.2s;
+}
+
+.video-card:hover .thumbnail,
+.video-card:focus .thumbnail {
+    outline: 3px solid #00aeec;
+}
+
+.video-title {
+    margin-top: 10px;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.video-card.active .thumbnail {
+    outline: 3px solid #00aeec;
+}
+
+@media (max-width: 900px) {
+    .video-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>▶ MY BILIBILI PLAYLIST</header>
+
+<div class="container">
+
+    <div class="player">
+        <iframe
+            id="mainPlayer"
+            src="https://player.bilibili.com/player.html?isOutside=true&aid=117471969351524&bvid=BV143nw6KExV&cid=42898293026&p=1"
+            scrolling="no"
+            allowfullscreen="true">
+        </iframe>
+    </div>
+
+    <h2>My Videos</h2>
+
+    <div class="video-grid" id="videoGrid"></div>
+
+</div>
+
+<script>
+const videos = [
+    {
+        title: "最后警告：人类历史上最大的泡沫，即将破裂",
+        bvid: "BV143nw6KExV",
+        aid: "117471969351524",
+        cid: "42898293026"
+    },
+    {
+        title: "我买下了北极的船票，踏上了前往世界尽头的旅行…..",
+        bvid: "BV19naF66Ezb",
+        aid: "117323121823355",
+        cid: "42146467149"
+    },
+    {
+        title: "什么是弹道导弹？【军识】",
+        bvid: "BV1ubhU6iEy1",
+        aid: "117332064078877",
+        cid: "42196927571"
+    },
+    {
+        title: "1米52的娇小姑娘，如何成为史上最强的空中女武神？",
+        bvid: "BV14Jac6cErW",
+        aid: "117324296231132",
+        cid: "42154918977"
+    },
+    {
+        title: "谁是有史以来最能整活的超级天才！|费曼",
+        bvid: "BV19sx46cEKB",
+        aid: "117540873311906",
+        cid: "117540873311906"
+    },
+    {
+        title: "一个傲慢的失败者，凭什么能被中国人敬仰了一千八百年？|关羽",
+        bvid: "BV1g7td6jEf7",
+        aid: "117205849085992",
+        cid: "41542946383"
+    },
+    {
+        title: "周星驰炒楼发财，万梓良卖衫破产！有情有义的江湖儿女们",
+        bvid: "BV143nw6KExV",
+        aid: "117471969351524",
+        cid: "42023653298"
+    },
+    {
+        title: "Video 08",
+        bvid: "BV143nw6KExV",
+        aid: "117471969351524",
+        cid: "42898293026"
+    }
+];
+
+const grid = document.getElementById("videoGrid");
+const player = document.getElementById("mainPlayer");
+
+function playVideo(index) {
+    const video = videos[index];
+
+    const url =
+        `https://player.bilibili.com/player.html?isOutside=true` +
+        `&aid=${video.aid}` +
+        `&bvid=${video.bvid}` +
+        `&cid=${video.cid}&p=1`;
+
+    player.src = url;
+
+    document.querySelectorAll(".video-card")
+        .forEach(card => card.classList.remove("active"));
+
+    document.querySelectorAll(".video-card")[index]
+        .classList.add("active");
+}
+
+videos.forEach((video, index) => {
+    const card = document.createElement("div");
+
+    card.className = "video-card";
+    card.tabIndex = 0;
+
+    card.innerHTML = `
+        <div class="thumbnail">▶</div>
+        <div class="video-title">${video.title}</div>
+    `;
+
+    card.addEventListener("click", () => playVideo(index));
+
+    card.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            playVideo(index);
+        }
+    });
+
+    grid.appendChild(card);
+});
+
+playVideo(0);
+</script>
+
+</body>
+</html>
