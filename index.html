@@ -61,13 +61,16 @@ h2 {
     aspect-ratio: 16 / 9;
     background: #333;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 38px;
-    color: #aaa;
-    transition: 0.2s;
+    overflow: hidden;
 }
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 
 .video-card:hover .thumbnail,
 .video-card:focus .thumbnail {
@@ -119,49 +122,71 @@ const videos = [
         title: "最后警告：人类历史上最大的泡沫，即将破裂",
         bvid: "BV143nw6KExV",
         aid: "117471969351524",
-        cid: "42898293026"
+        cid: "42898293026",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/0da9a629e2799580f0248f2279f28a260e52ca44.jpg@760w_428h_1c.avif"
     },
     {
         title: "我买下了北极的船票，踏上了前往世界尽头的旅行…..",
         bvid: "BV19naF66Ezb",
         aid: "117323121823355",
-        cid: "42146467149"
+        cid: "42146467149",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/6c418aa83f64c7ec86d5c0b13c85520ed791941d.jpg@760w_428h_1c.avif"
     },
     {
         title: "什么是弹道导弹？【军识】",
         bvid: "BV1ubhU6iEy1",
         aid: "117332064078877",
-        cid: "42196927571"
+        cid: "42196927571",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/dece8cd3d3893318622810517f480728fa3b172a.jpg@760w_428h_1c.avif"
     },
     {
         title: "1米52的娇小姑娘，如何成为史上最强的空中女武神？",
         bvid: "BV14Jac6cErW",
         aid: "117324296231132",
-        cid: "42154918977"
+        cid: "42154918977",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/beb67e65253d03bacb92ab507fd7b187955c6694.jpg@760w_428h_1c.avif"
     },
     {
         title: "谁是有史以来最能整活的超级天才！|费曼",
         bvid: "BV19sx46cEKB",
         aid: "117540873311906",
-        cid: "117540873311906"
+        cid: "117540873311906",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/b4db179b6ad1f378ea1fdab0a5a01cdf74af0fd9.jpg@760w_428h_1c.avif"
     },
     {
         title: "一个傲慢的失败者，凭什么能被中国人敬仰了一千八百年？|关羽",
         bvid: "BV1g7td6jEf7",
         aid: "117205849085992",
-        cid: "41542946383"
+        cid: "41542946383",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/77bbbeff6b8d4071d9f93d6f669ba89959653501.jpg@760w_428h_1c.avif"
     },
     {
         title: "周星驰炒楼发财，万梓良卖衫破产！有情有义的江湖儿女们",
         bvid: "BV143nw6KExV",
         aid: "117471969351524",
-        cid: "42023653298"
+        cid: "42023653298",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/970cb1c1c3f6a4c1dca3a3b16183cb57f038dc84.jpg@760w_428h_1c.avif"
     },
     {
-        title: "Video 08",
-        bvid: "BV143nw6KExV",
-        aid: "117471969351524",
-        cid: "42898293026"
+       title: "暴涨→大跌→倒闭 从行业周期看内存何时降价",
+        bvid: "BV1ZwxR6SEaV",
+        aid: "117557684078248",
+        cid: "43322639115",
+        thumbnail:"https://i0.hdslb.com/bfs/archive/6c5d5b0186efe993a8d9257ae7adb0a743af47e0.jpg@760w_428h_1c.avif"
+    },
+    {
+        title: "Video 09",
+        bvid: "",
+        aid: "",
+        cid: "",
+        thumbnail:""
+    },
+    {
+        title: "Video 10",
+        bvid: "",
+        aid: "",
+        cid: "",
+        thumbnail:""
     }
 ];
 
@@ -191,9 +216,15 @@ videos.forEach((video, index) => {
 
     card.className = "video-card";
     card.tabIndex = 0;
-
     card.innerHTML = `
-        <div class="thumbnail">▶</div>
+        <div class="thumbnail">
+            <img
+                src="${video.thumbnail || ''}"
+                alt="${video.title}"
+                referrerpolicy="no-referrer"
+                onerror="this.style.display='none'"
+            >
+        </div>
         <div class="video-title">${video.title}</div>
     `;
 
