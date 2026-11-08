@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Bilibili Playlist</title>
+<title>My Bilibili TV</title>
 
 <style>
 * {
@@ -26,12 +26,13 @@ header {
 }
 
 .container {
-    padding: 24px;
+    padding: 24px 30px;
 }
 
 .player {
     width: 100%;
     aspect-ratio: 16 / 9;
+    max-height: 75vh;
     background: black;
     margin-bottom: 30px;
 }
@@ -43,25 +44,33 @@ header {
 }
 
 h2 {
+    margin-bottom: 8px;
+}
+
+.status {
+    color: #999;
+    font-size: 13px;
     margin-bottom: 20px;
 }
 
 .video-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 20px;
+    gap: 24px 20px;
 }
 
 .video-card {
     cursor: pointer;
     min-width: 0;
+    outline: none;
 }
 
 .thumbnail {
     aspect-ratio: 16 / 9;
-    background: #333;
+    background: #292929;
     border-radius: 8px;
     overflow: hidden;
+    position: relative;
 }
 
 .thumbnail img {
@@ -71,25 +80,62 @@ h2 {
     display: block;
 }
 
+.play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.0);
+    font-size: 38px;
+    opacity: 0;
+    transition: 0.2s;
+}
 
-.video-card:hover .thumbnail,
-.video-card:focus .thumbnail {
+.video-card:hover .play-icon,
+.video-card:focus .play-icon {
+    opacity: 1;
+    background: rgba(0,0,0,0.35);
+}
+
+.video-card:focus .thumbnail,
+.video-card.active .thumbnail {
     outline: 3px solid #00aeec;
 }
 
 .video-title {
     margin-top: 10px;
     font-size: 16px;
-    line-height: 1.4;
+    line-height: 1.5;
+    color: #eee;
 }
 
-.video-card.active .thumbnail {
-    outline: 3px solid #00aeec;
+.video-card.active .video-title {
+    color: #00aeec;
 }
 
 @media (max-width: 900px) {
     .video-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 500px) {
+    .container {
+        padding: 14px;
+    }
+
+    header {
+        font-size: 20px;
+        padding: 18px;
+    }
+
+    .video-grid {
+        gap: 16px 12px;
+    }
+
+    .video-title {
+        font-size: 14px;
     }
 }
 </style>
@@ -104,6 +150,7 @@ h2 {
     <div class="player">
         <iframe
             id="mainPlayer"
+            title="Bilibili Video Player"
             src="https://player.bilibili.com/player.html?isOutside=true&aid=117471969351524&bvid=BV143nw6KExV&cid=42898293026&p=1"
             scrolling="no"
             allowfullscreen="true">
@@ -112,135 +159,320 @@ h2 {
 
     <h2>My Videos</h2>
 
+    <div class="status" id="status">
+        Loading video information...
+    </div>
+
     <div class="video-grid" id="videoGrid"></div>
 
 </div>
 
 <script>
+
+// =====================================
+// VIDEO LIST
+// Only bvid is required.
+// Other fields are optional fallbacks.
+// =====================================
+
 const videos = [
+
     {
-        title: "最后警告：人类历史上最大的泡沫，即将破裂",
         bvid: "BV143nw6KExV",
+        title: "最后警告：人类历史上最大的泡沫，即将破裂",
         aid: "117471969351524",
         cid: "42898293026",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/0da9a629e2799580f0248f2279f28a260e52ca44.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/0da9a629e2799580f0248f2279f28a260e52ca44.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "我买下了北极的船票，踏上了前往世界尽头的旅行…..",
         bvid: "BV19naF66Ezb",
+        title: "我买下了北极的船票，踏上了前往世界尽头的旅行…..",
         aid: "117323121823355",
         cid: "42146467149",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/6c418aa83f64c7ec86d5c0b13c85520ed791941d.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/6c418aa83f64c7ec86d5c0b13c85520ed791941d.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "什么是弹道导弹？【军识】",
         bvid: "BV1ubhU6iEy1",
+        title: "什么是弹道导弹？【军识】",
         aid: "117332064078877",
         cid: "42196927571",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/dece8cd3d3893318622810517f480728fa3b172a.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/dece8cd3d3893318622810517f480728fa3b172a.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "1米52的娇小姑娘，如何成为史上最强的空中女武神？",
         bvid: "BV14Jac6cErW",
+        title: "1米52的娇小姑娘，如何成为史上最强的空中女武神？",
         aid: "117324296231132",
         cid: "42154918977",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/beb67e65253d03bacb92ab507fd7b187955c6694.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/beb67e65253d03bacb92ab507fd7b187955c6694.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "谁是有史以来最能整活的超级天才！|费曼",
         bvid: "BV19sx46cEKB",
+        title: "谁是有史以来最能整活的超级天才！|费曼",
         aid: "117540873311906",
         cid: "117540873311906",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/b4db179b6ad1f378ea1fdab0a5a01cdf74af0fd9.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/b4db179b6ad1f378ea1fdab0a5a01cdf74af0fd9.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "一个傲慢的失败者，凭什么能被中国人敬仰了一千八百年？|关羽",
         bvid: "BV1g7td6jEf7",
+        title: "一个傲慢的失败者，凭什么能被中国人敬仰了一千八百年？|关羽",
         aid: "117205849085992",
         cid: "41542946383",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/77bbbeff6b8d4071d9f93d6f669ba89959653501.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/77bbbeff6b8d4071d9f93d6f669ba89959653501.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "周星驰炒楼发财，万梓良卖衫破产！有情有义的江湖儿女们",
         bvid: "BV143nw6KExV",
+        title: "周星驰炒楼发财，万梓良卖衫破产！有情有义的江湖儿女们",
         aid: "117471969351524",
         cid: "42023653298",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/970cb1c1c3f6a4c1dca3a3b16183cb57f038dc84.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/970cb1c1c3f6a4c1dca3a3b16183cb57f038dc84.jpg@760w_428h_1c.jpg"
     },
+
     {
-       title: "暴涨→大跌→倒闭 从行业周期看内存何时降价",
         bvid: "BV1ZwxR6SEaV",
+        title: "暴涨→大跌→倒闭 从行业周期看内存何时降价",
         aid: "117557684078248",
         cid: "43322639115",
-        thumbnail:"https://i0.hdslb.com/bfs/archive/6c5d5b0186efe993a8d9257ae7adb0a743af47e0.jpg@760w_428h_1c.avif"
+        thumbnail: "https://i0.hdslb.com/bfs/archive/6c5d5b0186efe993a8d9257ae7adb0a743af47e0.jpg@760w_428h_1c.jpg"
     },
+
     {
-        title: "Video 09",
-        bvid: "",
-        aid: "",
-        cid: "",
-        thumbnail:""
+        bvid: "BVxxxxxxxxxx"
     },
+
     {
-        title: "Video 10",
-        bvid: "",
-        aid: "",
-        cid: "",
-        thumbnail:""
+        bvid: "BVyyyyyyyyyy"
     }
+
 ];
+
+
+// =====================================
+// GET VIDEO INFORMATION FROM BILIBILI
+// =====================================
+
+async function fetchVideoInfo(video) {
+
+    if (!video.bvid ||
+        video.bvid.includes("xxxx") ||
+        video.bvid.includes("yyyy")) {
+        return video;
+    }
+
+    try {
+
+        const api =
+            "https://api.bilibili.com/x/web-interface/view?bvid="
+            + encodeURIComponent(video.bvid);
+
+        const response = await fetch(api);
+
+        if (!response.ok) {
+            throw new Error("API request failed");
+        }
+
+        const result = await response.json();
+
+        if (result.code !== 0 || !result.data) {
+            throw new Error("Video unavailable");
+        }
+
+        const data = result.data;
+
+        // API information fills missing fields.
+        // Existing manual values take priority.
+
+        return {
+            ...video,
+            title: video.title || data.title,
+            aid: video.aid || String(data.aid),
+            cid: video.cid || String(data.cid),
+            thumbnail: video.thumbnail || data.pic
+        };
+
+    } catch (error) {
+
+        console.warn(
+            "Could not fetch Bilibili information:",
+            video.bvid,
+            error
+        );
+
+        return {
+            ...video,
+            title: video.title || video.bvid
+        };
+
+    }
+}
+
+
+// =====================================
+// PLAYER
+// =====================================
 
 const grid = document.getElementById("videoGrid");
 const player = document.getElementById("mainPlayer");
+const status = document.getElementById("status");
+
+let activeIndex = 0;
 
 function playVideo(index) {
+
     const video = videos[index];
 
-    const url =
-        `https://player.bilibili.com/player.html?isOutside=true` +
-        `&aid=${video.aid}` +
-        `&bvid=${video.bvid}` +
-        `&cid=${video.cid}&p=1`;
+    if (!video || !video.bvid) return;
 
-    player.src = url;
-
-    document.querySelectorAll(".video-card")
-        .forEach(card => card.classList.remove("active"));
-
-    document.querySelectorAll(".video-card")[index]
-        .classList.add("active");
-}
-
-videos.forEach((video, index) => {
-    const card = document.createElement("div");
-
-    card.className = "video-card";
-    card.tabIndex = 0;
-    card.innerHTML = `
-        <div class="thumbnail">
-            <img
-                src="${video.thumbnail || ''}"
-                alt="${video.title}"
-                referrerpolicy="no-referrer"
-                onerror="this.style.display='none'"
-            >
-        </div>
-        <div class="video-title">${video.title}</div>
-    `;
-
-    card.addEventListener("click", () => playVideo(index));
-
-    card.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            playVideo(index);
-        }
+    const params = new URLSearchParams({
+        isOutside: "true",
+        bvid: video.bvid,
+        p: "1"
     });
 
-    grid.appendChild(card);
-});
+    if (video.aid) {
+        params.set("aid", video.aid);
+    }
 
-playVideo(0);
+    if (video.cid) {
+        params.set("cid", video.cid);
+    }
+
+    player.src =
+        "https://player.bilibili.com/player.html?"
+        + params.toString();
+
+    activeIndex = index;
+
+    document.querySelectorAll(".video-card")
+        .forEach((card, i) => {
+            card.classList.toggle("active", i === index);
+        });
+
+}
+
+
+// =====================================
+// CREATE VIDEO CARDS
+// =====================================
+
+function createCards() {
+
+    grid.innerHTML = "";
+
+    videos.forEach((video, index) => {
+
+        if (!video.bvid) return;
+
+        const card = document.createElement("div");
+
+        card.className = "video-card";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute(
+            "aria-label",
+            "Play " + (video.title || video.bvid)
+        );
+
+        const thumbnail = document.createElement("div");
+        thumbnail.className = "thumbnail";
+
+        if (video.thumbnail) {
+
+            const img = document.createElement("img");
+
+            img.src = video.thumbnail;
+            img.alt = video.title || video.bvid;
+            img.loading = "lazy";
+            img.referrerPolicy =
+                "strict-origin-when-cross-origin";
+
+            img.onerror = function() {
+                this.style.display = "none";
+            };
+
+            thumbnail.appendChild(img);
+
+        }
+
+        const playIcon = document.createElement("div");
+        playIcon.className = "play-icon";
+        playIcon.textContent = "▶";
+
+        thumbnail.appendChild(playIcon);
+
+        const title = document.createElement("div");
+        title.className = "video-title";
+        title.textContent =
+            video.title || video.bvid;
+
+        card.appendChild(thumbnail);
+        card.appendChild(title);
+
+        card.addEventListener("click", () => {
+            playVideo(index);
+        });
+
+        card.addEventListener("keydown", event => {
+
+            if (
+                event.key === "Enter" ||
+                event.key === " "
+            ) {
+                event.preventDefault();
+                playVideo(index);
+            }
+
+        });
+
+        grid.appendChild(card);
+
+    });
+
+}
+
+
+// =====================================
+// INITIALIZE
+// =====================================
+
+async function initialize() {
+
+    status.textContent =
+        "Loading video information...";
+
+    const results = await Promise.all(
+        videos.map(video => fetchVideoInfo(video))
+    );
+
+    // Update original video list.
+    results.forEach((video, index) => {
+        videos[index] = video;
+    });
+
+    createCards();
+
+    const count = videos.filter(v => v.bvid).length;
+
+    status.textContent =
+        count + " videos · Bilibili Playlist";
+
+    // Play first valid video.
+    const firstIndex =
+        videos.findIndex(v => v.bvid);
+
+    if (firstIndex !== -1) {
+        playVideo(firstIndex);
+    }
+
+}
+
+initialize();
+
 </script>
 
 </body>
